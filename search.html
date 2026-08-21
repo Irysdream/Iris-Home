@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN" translate="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#39C5BB">
+  <meta name="google" content="notranslate">
+  <title>搜索 - Iris Home</title>
+
+  <link rel="shortcut icon" type="image/ico" href="https://cdn.jsdelivr.net/gh/alist-org/logo@main/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    *:not([class*=icon]):not(i) {
+      font-family: 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+      font-weight: 700;
+    }
+
+    /* 禁止文字框选（输入框、链接除外） */
+    body, body * {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    input, textarea, [contenteditable="true"] {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+    }
+    a, a * {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      background-image: url('https://r2.sharelikes.com.cn/Yuru-Camp-Blur.webp');
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-size: cover;
+      background-position: 50% 50%;
+      color: #39C5BB;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 98;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(57, 197, 187, 0.2);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .logo {
+      width: 32px;
+      height: 32px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    }
+
+    .site-title {
+      font-size: 1.15rem;
+      color: #39C5BB;
+      letter-spacing: 1px;
+    }
+
+    .header-search {
+      display: flex;
+      flex: 1;
+      max-width: 560px;
+      margin: 0 20px;
+      background: #fff;
+      border: 1px solid rgba(57, 197, 187, 0.35);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .header-search input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 8px 16px;
+      font-size: 0.95rem;
+      font-weight: 400;
+      color: #333;
+      background: transparent;
+    }
+
+    .header-search button {
+      border: none;
+      background: #39C5BB;
+      color: #fff;
+      padding: 0 18px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .header-search button:hover {
+      background: #2da89f;
+    }
+
+    .back-home {
+      color: #39C5BB;
+      text-decoration: none;
+      font-size: 0.9rem;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .back-home:hover {
+      background: rgba(57, 197, 187, 0.12);
+    }
+
+    /* Results frame */
+    .results-wrap {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .results-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #fff;
+    }
+
+    .corner-img {
+      position: fixed;
+      bottom: 18px;
+      right: 18px;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      object-fit: cover;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      z-index: 100;
+      border: 2px solid rgba(255, 255, 255, 0.7);
+      background: #fff;
+      transition: transform 0.2s ease;
+    }
+    .corner-img:hover { transform: scale(1.12); }
+
+    .fallback {
+      display: none;
+      padding: 40px 24px;
+      text-align: center;
+      color: #2a6b66;
+    }
+    .fallback a {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 12px 24px;
+      background: #39C5BB;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    @media (max-width: 700px) {
+      .header-search { margin: 0 10px; max-width: none; }
+      .site-title { display: none; }
+      .back-home { font-size: 0.8rem; padding: 4px 8px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <a class="header-left" href="./index.html" title="返回首页">
+      <img class="logo" src="https://cdn.jsdelivr.net/gh/alist-org/logo@main/logo.svg" alt="Iris Home">
+      <span class="site-title">Iris Home</span>
+    </a>
+
+    <form class="header-search" id="searchForm" action="./search.html" method="get">
+      <input type="search" name="q" id="qInput" placeholder="搜索…" autocomplete="off">
+      <button type="submit">搜索</button>
+    </form>
+
+    <a class="back-home" href="./index.html">首页</a>
+  </header>
+
+  <div class="results-wrap" id="resultsWrap">
+    <iframe class="results-frame" id="resultsFrame" title="搜索结果" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"></iframe>
+    <div class="fallback" id="fallback">
+      <p>若结果未能嵌入显示，可直接打开 Bing 完整结果页</p>
+      <a id="openBing" href="#" target="_blank" rel="noopener">在新标签页打开搜索结果</a>
+    </div>
+  </div>
+
+  <img class="corner-img" src="./iris.png" alt="Iris" title="Iris">
+
+  <div id="musicPlayerContainer"></div>
+  <script>
+    (function() {
+      const autoplay = localStorage.getItem("iris_music_autoplay") === "1";
+      const script = document.createElement("script");
+      script.id = "myhk";
+      script.src = "https://myhkw.cn/api/player/166299859651";
+      script.setAttribute("key", "166299859651");
+      script.setAttribute("m", "1");
+      script.setAttribute("au", autoplay ? "1" : "0");
+      script.setAttribute("skin", "player");
+      script.setAttribute("lr", "r");
+      script.defer = true;
+      document.body.appendChild(script);
+    })();
+  </script>
+
+  <script>
+    (function () {
+      const params = new URLSearchParams(location.search);
+      const q = (params.get('q') || '').trim();
+      const input = document.getElementById('qInput');
+      const frame = document.getElementById('resultsFrame');
+      const fallback = document.getElementById('fallback');
+      const openBing = document.getElementById('openBing');
+
+      input.value = q;
+
+      if (!q) {
+        frame.style.display = 'none';
+        fallback.style.display = 'block';
+        openBing.style.display = 'none';
+        fallback.querySelector('p').textContent = '请输入关键词后搜索';
+        return;
+      }
+
+      // Bing 搜索结果（内容不变）
+      const bingUrl = 'https://www.bing.com/search?q=' + encodeURIComponent(q);
+      openBing.href = bingUrl;
+
+      // 尝试嵌入（部分环境可能因 X-Frame-Options 无法显示）
+      frame.src = bingUrl;
+
+      frame.addEventListener('load', function () {
+        // 若被拦截，onload 仍可能触发；用超时兜底显示备用入口
+      });
+
+      // 2.5 秒后若 iframe 仍空白，显示备用按钮（不强制隐藏 iframe）
+      setTimeout(function () {
+        fallback.style.display = 'block';
+        fallback.style.position = 'absolute';
+        fallback.style.bottom = '24px';
+        fallback.style.left = '0';
+        fallback.style.right = '0';
+        fallback.style.padding = '12px';
+        fallback.style.background = 'rgba(255,255,255,0.9)';
+      }, 2500);
+    })();
+  </script>
+</body>
+</html>

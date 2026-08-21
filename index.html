@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-CN" translate="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#39C5BB">
+  <meta name="google" content="notranslate">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Iris Home">
+  <title>Iris Home</title>
+
+  <link rel="shortcut icon" type="image/ico" href="https://cdn.jsdelivr.net/gh/alist-org/logo@main/logo.svg">
+  <link rel="apple-touch-icon" href="https://jsd.nn.ci/gh/alist-org/logo@main/logo.png">
+
+  <script src="https://cdn.jsdelivr.net/npm/pace-js@latest/pace.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@latest/pace-theme-default.min.css">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    *:not([class*=icon]):not(i) {
+      font-family: 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+      font-weight: 700;
+    }
+
+    /* 禁止文字框选（输入框、链接除外） */
+    body, body * {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    input, textarea, [contenteditable="true"] {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+    }
+    a, a * {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+    }
+
+
+    html, body {
+      height: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      background-image: url('https://r2.sharelikes.com.cn/Yuru-Camp-Blur.webp');
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-size: cover;
+      background-position: 50% 50%;
+      color: #39C5BB;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Top-left logo + title */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 98;
+      background: transparent;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo {
+      width: 36px;
+      height: 36px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+    }
+
+    .site-title {
+      font-size: 1.25rem;
+      color: #39C5BB;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      letter-spacing: 1px;
+    }
+
+    /* Right side icon buttons */
+    .header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      margin-top: 28px;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      background: transparent;
+      color: #39C5BB;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .icon-btn:hover {
+      opacity: 0.75;
+      transform: scale(1.08);
+    }
+
+    .icon-btn img {
+      width: 22px;
+      height: 22px;
+      display: block;
+    }
+
+    /* Menu drawer (category) - expandable */
+    .menu-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      opacity: 0;
+      visibility: hidden;
+      transition: 0.24s;
+      z-index: 100;
+    }
+    .menu-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .menu-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(380px, 100vw);
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: -4px 0 16px rgba(0, 0, 0, 0.1);
+      transform: translateX(100%);
+      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), width 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 101;
+      display: flex;
+    }
+    .menu-drawer.expand-mode {
+      width: 75vw;
+    }
+    .menu-drawer.active {
+      transform: translateX(0);
+    }
+
+    .expand-toggle-bar {
+      width: 28px;
+      background: #f0f7f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+      border-right: 1px solid #d4ebe8;
+    }
+    .expand-toggle-bar:hover {
+      background: #e0f2f0;
+    }
+    .expand-toggle-bar svg {
+      width: 16px;
+      height: 24px;
+    }
+
+    .drawer-content-wrap {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .menu-drawer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .menu-drawer-top h3 {
+      font-size: 18px;
+      color: #2a6b66;
+      font-weight: 700;
+    }
+    .menu-drawer-close {
+      border: none;
+      background: transparent;
+      font-size: 24px;
+      cursor: pointer;
+      color: #333;
+      line-height: 1;
+      padding: 4px 8px;
+    }
+    .menu-drawer-close:hover {
+      color: #39C5BB;
+    }
+
+    /* 音乐自动播放开关 */
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: #f0f7f6;
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+    .setting-row label {
+      font-size: 15px;
+      color: #2a6b66;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 26px;
+      flex-shrink: 0;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.3s;
+      border-radius: 26px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .switch input:checked + .slider {
+      background-color: #39C5BB;
+    }
+    .switch input:checked + .slider:before {
+      transform: translateX(22px);
+    }
+    .setting-tip {
+      margin: 0 0 8px;
+      padding: 0 4px;
+      font-size: 12px;
+      font-weight: 400;
+      color: #888;
+      line-height: 1.5;
+    }
+
+    /* Search overlay */
+    .search-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      opacity: 0;
+      visibility: hidden;
+      transition: 0.24s;
+      z-index: 100;
+    }
+
+    .search-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Right drawer */
+    .search-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(420px, 100vw);
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: -4px 0 18px rgba(0, 0, 0, 0.12);
+      transform: translateX(100%);
+      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 101;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .search-drawer.active {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .drawer-header h3 {
+      font-size: 18px;
+      color: #2a6b66;
+      font-weight: 700;
+    }
+
+    .drawer-close {
+      border: none;
+      background: transparent;
+      font-size: 24px;
+      cursor: pointer;
+      color: #444;
+      line-height: 1;
+      padding: 4px 8px;
+    }
+
+    .drawer-close:hover {
+      color: #39C5BB;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 400;
+      outline: none;
+      background: #fff;
+      color: #222;
+    }
+
+    .search-input:focus {
+      border-color: #39C5BB;
+    }
+
+    .search-input::placeholder {
+      color: #999;
+      font-weight: 400;
+    }
+
+    .search-submit {
+      width: 100%;
+      margin-top: 12px;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: #39C5BB;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .search-submit:hover {
+      background: #2da89f;
+    }
+
+    /* 小游戏 tag */
+    .game-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 20px;
+      padding: 10px 16px;
+      background: linear-gradient(135deg, #e0f7f5 0%, #d4ebe8 100%);
+      border: 1px solid #39C5BB;
+      border-radius: 20px;
+      color: #2a6b66;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      text-decoration: none;
+    }
+    .game-tag:hover {
+      transform: scale(1.04);
+      box-shadow: 0 4px 12px rgba(57, 197, 187, 0.25);
+    }
+    .game-tag span {
+      font-size: 16px;
+    }
+
+    /* Bottom-right small image */
+    .corner-img {
+      position: fixed;
+      bottom: 18px;
+      right: 18px;
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      object-fit: cover;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      z-index: 50;
+      border: 2px solid rgba(255, 255, 255, 0.7);
+      transition: transform 0.2s ease;
+      background: #fff;
+    }
+
+    .corner-img:hover {
+      transform: scale(1.12);
+    }
+
+    @media (max-width: 600px) {
+      .header {
+        padding: 0 16px;
+      }
+      .logo {
+        width: 32px;
+        height: 32px;
+      }
+      .site-title {
+        font-size: 1.1rem;
+      }
+      .icon-btn {
+        width: 36px;
+        height: 36px;
+      }
+      .icon-btn img {
+        width: 20px;
+        height: 20px;
+      }
+      .corner-img {
+        width: 46px;
+        height: 46px;
+        bottom: 14px;
+        right: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <img class="logo" src="https://cdn.jsdelivr.net/gh/alist-org/logo@main/logo.svg" alt="Iris Home">
+      <span class="site-title">Iris Home</span>
+    </div>
+    <div class="header-right">
+      <button class="icon-btn" id="menuTrigger" title="分类"><img src="./menu.svg" alt="分类"></button>
+      <button class="icon-btn" id="searchTrigger" title="搜索"><img src="./search.svg" alt="搜索"></button>
+    </div>
+  </header>
+
+  <!-- Search overlay + drawer -->
+  <div class="search-overlay" id="overlay"></div>
+  <div class="search-drawer" id="drawer">
+    <div class="drawer-header">
+      <h3>搜索</h3>
+      <button class="drawer-close" id="closeBtn">✕</button>
+    </div>
+    <form id="searchForm" action="./search.html" method="get" target="_blank">
+      <input class="search-input" id="searchInput" name="q" placeholder="输入关键词搜索…" type="search" autocomplete="off">
+      <button class="search-submit" type="submit">搜索</button>
+    </form>
+    <a class="game-tag" href="https://aidn.jp/mikutap/" target="_blank" rel="noopener">
+      <span>🎮</span> 小游戏 · Mikutap
+    </a>
+  </div>
+
+
+  <!-- Category menu drawer -->
+  <div class="menu-overlay" id="menuOverlay"></div>
+  <div class="menu-drawer" id="menuDrawer">
+    <div class="expand-toggle-bar" id="expandToggle" title="展开/收起">
+      <svg id="arrowIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15 18L9 12L15 6" stroke="#2a6b66" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="drawer-content-wrap">
+      <div class="menu-drawer-top">
+        <h3>分类菜单</h3>
+        <button class="menu-drawer-close" id="menuClose">✕</button>
+      </div>
+      <div class="setting-row">
+        <label for="musicAutoplay">音乐自动播放</label>
+        <label class="switch">
+          <input type="checkbox" id="musicAutoplay">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <p class="setting-tip">开启后刷新生效；部分浏览器需先点击页面一次才会出声</p>
+    </div>
+  </div>
+
+  <!-- Bottom-right small Iris image -->
+  <img class="corner-img" src="./iris.png" alt="Iris" title="Iris">
+
+  <!-- 音乐播放器：根据 localStorage 设置 au 后注入（须在页面底部） -->
+  <script>
+    (function () {
+      var MUSIC_KEY = 'iris_music_autoplay';
+      var autoplay = localStorage.getItem(MUSIC_KEY) === '1';
+      var s = document.createElement('script');
+      s.id = 'myhk';
+      s.src = 'https://myhkw.cn/api/player/166299859651';
+      s.setAttribute('key', '166299859651');
+      s.setAttribute('m', '1');
+      s.setAttribute('au', autoplay ? '1' : '0');
+      s.setAttribute('skin', 'player');
+      s.setAttribute('lr', 'r');
+      document.body.appendChild(s);
+    })();
+  </script>
+
+  <script>
+    // ========== 音乐自动播放开关 ==========
+    const MUSIC_KEY = 'iris_music_autoplay';
+    const autoplayCheckbox = document.getElementById('musicAutoplay');
+    autoplayCheckbox.checked = localStorage.getItem(MUSIC_KEY) === '1';
+
+    autoplayCheckbox.addEventListener('change', function () {
+      localStorage.setItem(MUSIC_KEY, this.checked ? '1' : '0');
+      // 明月浩空播放器仅在初始化时读取 au，需刷新页面才能生效
+      location.reload();
+    });
+
+    // ========== Search drawer ==========
+    const trigger = document.getElementById('searchTrigger');
+    const overlay = document.getElementById('overlay');
+    const drawer = document.getElementById('drawer');
+    const closeBtn = document.getElementById('closeBtn');
+    const searchInput = document.getElementById('searchInput');
+
+    function openDrawer() {
+      overlay.classList.add('active');
+      drawer.classList.add('active');
+      setTimeout(() => searchInput.focus(), 300);
+    }
+
+    function closeDrawer() {
+      overlay.classList.remove('active');
+      drawer.classList.remove('active');
+    }
+
+    trigger.addEventListener('click', openDrawer);
+    closeBtn.addEventListener('click', closeDrawer);
+    overlay.addEventListener('click', closeDrawer);
+
+    // ========== Category menu drawer ==========
+    const menuTrigger = document.getElementById('menuTrigger');
+    const menuOverlay = document.getElementById('menuOverlay');
+    const menuDrawer = document.getElementById('menuDrawer');
+    const menuClose = document.getElementById('menuClose');
+    const expandToggle = document.getElementById('expandToggle');
+    const arrowIcon = document.getElementById('arrowIcon');
+    let isExpand = false;
+
+    function openMenu() {
+      menuOverlay.classList.add('active');
+      menuDrawer.classList.add('active');
+    }
+    function closeMenu() {
+      menuOverlay.classList.remove('active');
+      menuDrawer.classList.remove('active');
+      if (isExpand) {
+        isExpand = false;
+        menuDrawer.classList.remove('expand-mode');
+        arrowIcon.innerHTML = '<path d="M15 18L9 12L15 6" stroke="#2a6b66" stroke-width="2" stroke-linecap="round"/>';
+      }
+    }
+
+    function toggleExpand() {
+      isExpand = !isExpand;
+      menuDrawer.classList.toggle('expand-mode', isExpand);
+      if (isExpand) {
+        arrowIcon.innerHTML = '<path d="M9 6L15 12L9 18" stroke="#2a6b66" stroke-width="2" stroke-linecap="round"/>';
+      } else {
+        arrowIcon.innerHTML = '<path d="M15 18L9 12L15 6" stroke="#2a6b66" stroke-width="2" stroke-linecap="round"/>';
+      }
+    }
+
+    menuTrigger.addEventListener('click', openMenu);
+    menuClose.addEventListener('click', closeMenu);
+    menuOverlay.addEventListener('click', closeMenu);
+    expandToggle.addEventListener('click', toggleExpand);
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        if (isExpand) {
+          toggleExpand();
+        } else {
+          closeDrawer();
+          closeMenu();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
