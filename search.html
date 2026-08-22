@@ -42,7 +42,8 @@
 
     html, body {
       height: 100%;
-      overflow: hidden;
+      /* ========== 修改1：删除 overflow:hidden，否则页面无法滚动，导航隐藏失效 ========== */
+      /* overflow: hidden; */
     }
 
     body {
@@ -71,6 +72,12 @@
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(57, 197, 187, 0.2);
+      /* ========== 修改2：增加过渡动画，实现滑入滑出 ========== */
+      transition: transform 0.3s ease;
+    }
+    /* 向下滚动隐藏导航 */
+    .header.hide-nav {
+      transform: translateY(-100%);
     }
 
     .header-left {
@@ -144,11 +151,10 @@
 
     /* Results frame */
     .results-wrap {
-      position: fixed;
-      top: 56px;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      /* ========== 修改3：原来fixed改成relative，top去掉，给顶部留出导航56px高度 ========== */
+      position: relative;
+      margin-top: 56px;
+      height: calc(100vh - 56px);
       background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
@@ -266,7 +272,7 @@
       const bingUrl = 'https://www.bing.com/search?q=' + encodeURIComponent(q);
       openBing.href = bingUrl;
 
-      // 尝试嵌入（部分环境可能因 X-Frame-Options 无法显示）
+      // 尝试嵌入（部分环境可能因 X‑Frame‑Options 无法显示）
       frame.src = bingUrl;
 
       frame.addEventListener('load', function () {
@@ -284,6 +290,19 @@
         fallback.style.background = 'rgba(255,255,255,0.9)';
       }, 2500);
     })();
+
+    // ========== 新增：导航栏滚动隐藏JS ==========
+    let lastScrollY = window.scrollY;
+    const headerDom = document.querySelector(".header");
+    window.addEventListener("scroll", () => {
+      const currentScrollY = window.scrollY;
+      if(currentScrollY > lastScrollY && currentScrollY > 30){
+        headerDom.classList.add("hide-nav");
+      }else{
+        headerDom.classList.remove("hide-nav");
+      }
+      lastScrollY = currentScrollY;
+    })
   </script>
 </body>
 </html>
