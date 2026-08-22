@@ -531,7 +531,7 @@
       var autoplay = localStorage.getItem(MUSIC_KEY) === '1';
       var s = document.createElement('script');
       s.id = 'myhk';
-      s.src = 'https://myhkw.cn/api/player/178737029928';
+      s.src = 'https://myhkw.cn/api/player/178737029928?t='+Date.now();
       s.setAttribute('key', '178737029928');
       s.setAttribute('m', '1');
       s.setAttribute('au', autoplay ? '1' : '0');
