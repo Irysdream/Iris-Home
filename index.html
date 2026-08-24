@@ -1039,7 +1039,7 @@
       }
     });
   </script>
-<!-- ==================== Live2D 看板娘（上半身显示） ==================== -->
+<!-- ==================== Live2D 看板娘（完整上半身 + 贴底） ==================== -->
 <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/live2dcubismcore@1.0.2/live2dcubismcore.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
@@ -1048,16 +1048,16 @@
 (async function () {
   if (window.innerWidth < 768) return;
 
-  // ========== 上半身参数（对应第一张图） ==========
+  // ========== 完整上半身参数 ==========
   const config = {
-    left: 20,          // 距离左边
-    bottom: 20,        // 距离底部
-    width: 280,        // 显示区域宽度
-    height: 320,       // 显示区域高度（矮一点，只露上半身）
-    scale: 0.22,       // 模型稍大
-    offsetY: 160       // 垂直位置（控制露多少）
+    left: 15,          // 距离左边
+    bottom: 10,        // 贴齐底部
+    width: 260,        // 显示区域宽度
+    height: 300,       // 显示区域高度
+    scale: 0.17,       // 模型大小（已缩小）
+    offsetY: 210       // 垂直位置（控制上半身居中）
   };
-  // ============================================
+  // ==================================
 
   if (!window.PIXI || !window.PIXI.live2d) {
     console.error('Live2D 库加载失败');
@@ -1077,7 +1077,7 @@
     zIndex: '9998',
     pointerEvents: 'none',
     cursor: 'move',
-    overflow: 'hidden'   // 裁剪超出部分
+    overflow: 'hidden'
   });
   document.body.appendChild(container);
 
@@ -1137,7 +1137,7 @@
       if (e.button === 1) e.preventDefault();
     });
 
-    console.log('MIKU Live2D 上半身模式加载成功 ✓');
+    console.log('MIKU Live2D 完整上半身模式加载成功 ✓');
   } catch (err) {
     console.error('模型加载失败：', err);
   }
