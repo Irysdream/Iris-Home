@@ -1039,7 +1039,7 @@
       }
     });
   </script>
-<!-- ==================== Live2D 看板娘（表情CD + 视线追踪） ==================== -->
+<!-- ==================== Live2D 看板娘（模型范围内追踪） ==================== -->
 <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/live2dcubismcore@1.0.2/live2dcubismcore.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
@@ -1102,7 +1102,7 @@
   try {
     const model = await Live2DModel.from(
       'https://irysdream.github.io/Iris-Home/miku/miku.model3.json',
-      { autoInteract: false }   // 关闭默认交互，自己控制
+      { autoInteract: false }
     );
 
     model.scale.set(config.scale);
@@ -1113,8 +1113,8 @@
     app.stage.addChild(model);
 
     // ========== 表情系统 ==========
-    let canClick = true;               // 3秒冷却
-    let autoTimer = null;              // 30秒自动表情计时器
+    let canClick = true;
+    let autoTimer = null;
 
     function randomExpression() {
       const name = expressions[Math.floor(Math.random() * expressions.length)];
@@ -1126,44 +1126,34 @@
 
     function startAutoExpression() {
       if (autoTimer) clearInterval(autoTimer);
-      autoTimer = setInterval(() => {
-        randomExpression();
-      }, 30000);
+      autoTimer = setInterval(randomExpression, 30000);
     }
-
-    // 初始启动 30 秒自动表情
     startAutoExpression();
 
-    // 点击触发表情（带 3 秒 CD + 重置计时）
+    // 点击表情（3秒CD + 重置计时）
     app.view.addEventListener('click', () => {
       if (!canClick) return;
-
       canClick = false;
       randomExpression();
-      startAutoExpression();           // 重置 30 秒计时
-
-      // 3 秒后恢复可点击
-      setTimeout(() => {
-        canClick = true;
-      }, 3000);
+      startAutoExpression();
+      setTimeout(() => canClick = true, 3000);
     });
 
-    // ========== 鼠标视线追踪 ==========
+    // ========== 只在模型范围内追踪 ==========
     app.view.addEventListener('pointermove', (e) => {
       const rect = app.view.getBoundingClientRect();
-      // 转换成 -1 ~ 1 的坐标
+      // 转换成 -1 ~ 1
       const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
-
-      model.focus(x, y);   // 眼睛和身体看向鼠标
+      model.focus(x, y);
     });
 
-    // 鼠标离开时看回中间
+    // 鼠标离开模型范围时看回正面
     app.view.addEventListener('pointerleave', () => {
       model.focus(0, 0);
     });
 
-    console.log('MIKU Live2D 加载成功 ✓（点击表情有3秒CD，鼠标移动会看向你）');
+    console.log('MIKU Live2D 加载成功 ✓');
   } catch (err) {
     console.error('模型加载失败：', err);
   }
