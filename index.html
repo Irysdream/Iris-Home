@@ -1039,7 +1039,7 @@
       }
     });
   </script>
-<!-- ==================== Live2D 看板娘（左上角上半身） ==================== -->
+<!-- ==================== Live2D 看板娘（底部对齐 + 合适大小） ==================== -->
 <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/live2dcubismcore@1.0.2/live2dcubismcore.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
@@ -1048,16 +1048,16 @@
 (async function () {
   if (window.innerWidth < 768) return;
 
-  // ========== 在这里手动调节 ==========
+  // ========== 在这里调节 ==========
   const config = {
-    left: 20,          // 距离左边的距离
-    top: 80,           // 距离顶部的距离
-    width: 280,        // 显示区域宽度
-    height: 360,       // 显示区域高度
-    scale: 0.22,       // 模型大小（越大越大）
-    offsetY: 180       // 垂直偏移（越大越往下，用来控制露多少上半身）
+    right: 20,         // 距离右边
+    bottom: 10,        // 距离底部（对齐网站底部）
+    width: 260,        // 显示区域宽度
+    height: 340,       // 显示区域高度
+    scale: 0.16,       // 模型大小（已缩小）
+    offsetY: 20        // 垂直微调（正数往下，负数往上）
   };
-  // ==================================
+  // ==============================
 
   if (!window.PIXI || !window.PIXI.live2d) {
     console.error('Live2D 库加载失败');
@@ -1070,8 +1070,8 @@
   container.id = 'live2d-miku';
   Object.assign(container.style, {
     position: 'fixed',
-    left: config.left + 'px',
-    top: config.top + 'px',
+    right: config.right + 'px',
+    bottom: config.bottom + 'px',
     width: config.width + 'px',
     height: config.height + 'px',
     zIndex: '9998',
@@ -1097,8 +1097,8 @@
 
     model.scale.set(config.scale);
     model.x = app.screen.width / 2;
-    model.y = config.offsetY;
-    model.anchor.set(0.5, 0.5);   // 以中心为锚点，方便控制上半身
+    model.y = app.screen.height + config.offsetY;
+    model.anchor.set(0.5, 1);   // 底部对齐
 
     app.stage.addChild(model);
 
