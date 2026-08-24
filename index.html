@@ -1048,15 +1048,15 @@
 (async function () {
   if (window.innerWidth < 768) return;
 
-  // ========== 初始位置和大小（可调） ==========
+  // ========== 初始位置（左下角） ==========
   const config = {
-    right: 30,
-    bottom: 20,
+    left: 20,          // 距离左边
+    bottom: 20,        // 距离底部
     width: 300,
     height: 480,
-    scale: 0.13          // 完整显示的关键参数
+    scale: 0.13
   };
-  // ========================================
+  // =====================================
 
   if (!window.PIXI || !window.PIXI.live2d) {
     console.error('Live2D 库加载失败');
@@ -1065,12 +1065,11 @@
 
   const { Live2DModel } = PIXI.live2d;
 
-  // 创建容器
   const container = document.createElement('div');
   container.id = 'live2d-miku';
   Object.assign(container.style, {
     position: 'fixed',
-    right: config.right + 'px',
+    left: config.left + 'px',
     bottom: config.bottom + 'px',
     width: config.width + 'px',
     height: config.height + 'px',
@@ -1096,7 +1095,6 @@
       { autoInteract: true }
     );
 
-    // 完整显示设置
     model.scale.set(config.scale);
     model.x = app.screen.width / 2;
     model.y = app.screen.height - 10;
@@ -1107,41 +1105,36 @@
     // ========== 中键拖动功能 ==========
     let isDragging = false;
     let startX, startY;
-    let startRight, startBottom;
+    let startLeft, startBottom;
 
-    // 鼠标按下（中键）
     app.view.addEventListener('mousedown', (e) => {
       if (e.button === 1) { // 中键
         e.preventDefault();
         isDragging = true;
         startX = e.clientX;
         startY = e.clientY;
-        startRight = parseInt(container.style.right) || 0;
+        startLeft = parseInt(container.style.left) || 0;
         startBottom = parseInt(container.style.bottom) || 0;
-        container.style.pointerEvents = 'auto';
       }
     });
 
-    // 鼠标移动
     window.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
       e.preventDefault();
 
-      const deltaX = startX - e.clientX;   // 因为是 right 定位，方向要反
-      const deltaY = e.clientY - startY;   // bottom 定位
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
 
-      container.style.right = (startRight + deltaX) + 'px';
+      container.style.left = (startLeft + deltaX) + 'px';
       container.style.bottom = (startBottom - deltaY) + 'px';
     });
 
-    // 鼠标松开
     window.addEventListener('mouseup', (e) => {
       if (e.button === 1) {
         isDragging = false;
       }
     });
 
-    // 防止中键默认滚动行为
     app.view.addEventListener('auxclick', (e) => {
       if (e.button === 1) e.preventDefault();
     });
