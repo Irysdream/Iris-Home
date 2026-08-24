@@ -1039,9 +1039,9 @@
       }
     });
   </script>
-  <!-- ==================== Live2D 看板娘 ==================== -->
-<script src="https://cdn.jsdelivr.net/npm/pixi.js@7.x/dist/pixi.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.5.0-beta/dist/index.min.js"></script>
+<!-- ==================== Live2D 看板娘（Cubism 3/4） ==================== -->
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/index.min.js"></script>
 <script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
 
 <script>
@@ -1049,7 +1049,13 @@
   // 手机端不加载
   if (window.innerWidth < 768) return;
 
-  const { Application, Live2DModel } = PIXI;
+  // 等待库加载完成
+  if (!window.PIXI || !window.PIXI.live2d) {
+    console.error('Live2D 库加载失败');
+    return;
+  }
+
+  const { Live2DModel } = PIXI.live2d;
 
   // 创建容器
   const container = document.createElement('div');
@@ -1065,7 +1071,8 @@
   });
   document.body.appendChild(container);
 
-  const app = new Application({
+  // 创建 PIXI 应用
+  const app = new PIXI.Application({
     view: document.createElement('canvas'),
     autoStart: true,
     resizeTo: container,
@@ -1075,28 +1082,36 @@
   container.appendChild(app.view);
   app.view.style.pointerEvents = 'auto';
 
-  // 加载模型
-  const model = await Live2DModel.from(
-    'https://irysdream.github.io/Iris-Home/miku/miku.model3.json',
-    { autoInteract: true }
-  );
+  try {
+    // 加载模型
+    const model = await Live2DModel.from(
+      'https://irysdream.github.io/Iris-Home/miku/miku.model3.json',
+      {
+        autoInteract: true
+      }
+    );
 
-  // 位置与大小（可微调）
-  model.scale.set(0.24);
-  model.x = app.screen.width / 2;
-  model.y = app.screen.height + 30;
-  model.anchor.set(0.5, 1);
+    // 调整大小和位置
+    model.scale.set(0.24);
+    model.x = app.screen.width / 2;
+    model.y = app.screen.height + 30;
+    model.anchor.set(0.5, 1);
 
-  app.stage.addChild(model);
+    app.stage.addChild(model);
 
-  // 每 20 秒随机播放一个动作
-  const motions = ['Happy', 'Angry', 'Cute', 'Move', 'Cry', 'Sleep'];
-  setInterval(() => {
-    const name = motions[Math.floor(Math.random() * motions.length)];
-    try { model.motion(name); } catch (e) {}
-  }, 20000);
+    // 每 20 秒随机播放动作
+    const motions = ['Happy', 'Angry', 'Cute', 'Move', 'Cry', 'Sleep'];
+    setInterval(() => {
+      const name = motions[Math.floor(Math.random() * motions.length)];
+      try {
+        model.motion(name);
+      } catch (e) {}
+    }, 20000);
 
-  console.log('MIKU Live2D 加载成功 ✓');
+    console.log('MIKU Live2D 加载成功 ✓');
+  } catch (err) {
+    console.error('模型加载失败：', err);
+  }
 })();
 </script>
 </body>
