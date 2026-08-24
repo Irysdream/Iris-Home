@@ -1039,7 +1039,7 @@
       }
     });
   </script>
-<!-- ==================== Live2D 看板娘（完整上半身 + 贴底） ==================== -->
+<!-- ==================== Live2D 看板娘（上半身贴底） ==================== -->
 <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/live2dcubismcore@1.0.2/live2dcubismcore.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
@@ -1048,16 +1048,16 @@
 (async function () {
   if (window.innerWidth < 768) return;
 
-  // ========== 完整上半身参数 ==========
+  // ========== 最终参数 ==========
   const config = {
-    left: 15,          // 距离左边
-    bottom: 10,        // 贴齐底部
-    width: 260,        // 显示区域宽度
-    height: 300,       // 显示区域高度
-    scale: 0.17,       // 模型大小（已缩小）
-    offsetY: 210       // 垂直位置（控制上半身居中）
+    left: 10,          // 距离左边
+    bottom: 5,         // 贴齐底部
+    width: 250,        // 显示区域宽度
+    height: 290,       // 显示区域高度
+    scale: 0.165,      // 模型大小
+    offsetY: 200       // 垂直位置
   };
-  // ==================================
+  // ============================
 
   if (!window.PIXI || !window.PIXI.live2d) {
     console.error('Live2D 库加载失败');
@@ -1076,7 +1076,6 @@
     height: config.height + 'px',
     zIndex: '9998',
     pointerEvents: 'none',
-    cursor: 'move',
     overflow: 'hidden'
   });
   document.body.appendChild(container);
@@ -1104,40 +1103,7 @@
 
     app.stage.addChild(model);
 
-    // ========== 中键拖动 ==========
-    let isDragging = false;
-    let startX, startY;
-    let startLeft, startBottom;
-
-    app.view.addEventListener('mousedown', (e) => {
-      if (e.button === 1) {
-        e.preventDefault();
-        isDragging = true;
-        startX = e.clientX;
-        startY = e.clientY;
-        startLeft = parseInt(container.style.left) || 0;
-        startBottom = parseInt(container.style.bottom) || 0;
-      }
-    });
-
-    window.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      e.preventDefault();
-      const deltaX = e.clientX - startX;
-      const deltaY = e.clientY - startY;
-      container.style.left = (startLeft + deltaX) + 'px';
-      container.style.bottom = (startBottom - deltaY) + 'px';
-    });
-
-    window.addEventListener('mouseup', (e) => {
-      if (e.button === 1) isDragging = false;
-    });
-
-    app.view.addEventListener('auxclick', (e) => {
-      if (e.button === 1) e.preventDefault();
-    });
-
-    console.log('MIKU Live2D 完整上半身模式加载成功 ✓');
+    console.log('MIKU Live2D 加载成功 ✓');
   } catch (err) {
     console.error('模型加载失败：', err);
   }
