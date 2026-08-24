@@ -1039,7 +1039,7 @@
       }
     });
   </script>
-<!-- ==================== Live2D 看板娘（完整模型 + 中键拖动） ==================== -->
+<!-- ==================== Live2D 看板娘（上半身显示） ==================== -->
 <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/live2dcubismcore@1.0.2/live2dcubismcore.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
@@ -1048,15 +1048,16 @@
 (async function () {
   if (window.innerWidth < 768) return;
 
-  // ========== 初始位置（左下角） ==========
+  // ========== 上半身参数（对应第一张图） ==========
   const config = {
     left: 20,          // 距离左边
     bottom: 20,        // 距离底部
-    width: 300,
-    height: 480,
-    scale: 0.13
+    width: 280,        // 显示区域宽度
+    height: 320,       // 显示区域高度（矮一点，只露上半身）
+    scale: 0.22,       // 模型稍大
+    offsetY: 160       // 垂直位置（控制露多少）
   };
-  // =====================================
+  // ============================================
 
   if (!window.PIXI || !window.PIXI.live2d) {
     console.error('Live2D 库加载失败');
@@ -1075,7 +1076,8 @@
     height: config.height + 'px',
     zIndex: '9998',
     pointerEvents: 'none',
-    cursor: 'move'
+    cursor: 'move',
+    overflow: 'hidden'   // 裁剪超出部分
   });
   document.body.appendChild(container);
 
@@ -1097,18 +1099,18 @@
 
     model.scale.set(config.scale);
     model.x = app.screen.width / 2;
-    model.y = app.screen.height - 10;
-    model.anchor.set(0.5, 1);
+    model.y = config.offsetY;
+    model.anchor.set(0.5, 0.5);
 
     app.stage.addChild(model);
 
-    // ========== 中键拖动功能 ==========
+    // ========== 中键拖动 ==========
     let isDragging = false;
     let startX, startY;
     let startLeft, startBottom;
 
     app.view.addEventListener('mousedown', (e) => {
-      if (e.button === 1) { // 中键
+      if (e.button === 1) {
         e.preventDefault();
         isDragging = true;
         startX = e.clientX;
@@ -1121,25 +1123,21 @@
     window.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
       e.preventDefault();
-
       const deltaX = e.clientX - startX;
       const deltaY = e.clientY - startY;
-
       container.style.left = (startLeft + deltaX) + 'px';
       container.style.bottom = (startBottom - deltaY) + 'px';
     });
 
     window.addEventListener('mouseup', (e) => {
-      if (e.button === 1) {
-        isDragging = false;
-      }
+      if (e.button === 1) isDragging = false;
     });
 
     app.view.addEventListener('auxclick', (e) => {
       if (e.button === 1) e.preventDefault();
     });
 
-    console.log('MIKU Live2D 加载成功 ✓（按住鼠标中键可拖动）');
+    console.log('MIKU Live2D 上半身模式加载成功 ✓');
   } catch (err) {
     console.error('模型加载失败：', err);
   }
