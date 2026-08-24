@@ -1039,7 +1039,7 @@
       }
     });
   </script>
-<!-- ==================== Live2D 看板娘（底部对齐 + 合适大小） ==================== -->
+<!-- ==================== Live2D 看板娘（完整模型 + 中键拖动） ==================== -->
 <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/live2dcubismcore@1.0.2/live2dcubismcore.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
@@ -1048,16 +1048,15 @@
 (async function () {
   if (window.innerWidth < 768) return;
 
-  // ========== 在这里调节 ==========
+  // ========== 初始位置和大小（可调） ==========
   const config = {
-    right: 20,         // 距离右边
-    bottom: 10,        // 距离底部（对齐网站底部）
-    width: 260,        // 显示区域宽度
-    height: 340,       // 显示区域高度
-    scale: 0.16,       // 模型大小（已缩小）
-    offsetY: 20        // 垂直微调（正数往下，负数往上）
+    right: 30,
+    bottom: 20,
+    width: 300,
+    height: 480,
+    scale: 0.13          // 完整显示的关键参数
   };
-  // ==============================
+  // ========================================
 
   if (!window.PIXI || !window.PIXI.live2d) {
     console.error('Live2D 库加载失败');
@@ -1066,6 +1065,7 @@
 
   const { Live2DModel } = PIXI.live2d;
 
+  // 创建容器
   const container = document.createElement('div');
   container.id = 'live2d-miku';
   Object.assign(container.style, {
@@ -1075,7 +1075,8 @@
     width: config.width + 'px',
     height: config.height + 'px',
     zIndex: '9998',
-    pointerEvents: 'none'
+    pointerEvents: 'none',
+    cursor: 'move'
   });
   document.body.appendChild(container);
 
@@ -1095,14 +1096,57 @@
       { autoInteract: true }
     );
 
+    // 完整显示设置
     model.scale.set(config.scale);
     model.x = app.screen.width / 2;
-    model.y = app.screen.height + config.offsetY;
-    model.anchor.set(0.5, 1);   // 底部对齐
+    model.y = app.screen.height - 10;
+    model.anchor.set(0.5, 1);
 
     app.stage.addChild(model);
 
-    console.log('MIKU Live2D 加载成功 ✓');
+    // ========== 中键拖动功能 ==========
+    let isDragging = false;
+    let startX, startY;
+    let startRight, startBottom;
+
+    // 鼠标按下（中键）
+    app.view.addEventListener('mousedown', (e) => {
+      if (e.button === 1) { // 中键
+        e.preventDefault();
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startRight = parseInt(container.style.right) || 0;
+        startBottom = parseInt(container.style.bottom) || 0;
+        container.style.pointerEvents = 'auto';
+      }
+    });
+
+    // 鼠标移动
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+
+      const deltaX = startX - e.clientX;   // 因为是 right 定位，方向要反
+      const deltaY = e.clientY - startY;   // bottom 定位
+
+      container.style.right = (startRight + deltaX) + 'px';
+      container.style.bottom = (startBottom - deltaY) + 'px';
+    });
+
+    // 鼠标松开
+    window.addEventListener('mouseup', (e) => {
+      if (e.button === 1) {
+        isDragging = false;
+      }
+    });
+
+    // 防止中键默认滚动行为
+    app.view.addEventListener('auxclick', (e) => {
+      if (e.button === 1) e.preventDefault();
+    });
+
+    console.log('MIKU Live2D 加载成功 ✓（按住鼠标中键可拖动）');
   } catch (err) {
     console.error('模型加载失败：', err);
   }
