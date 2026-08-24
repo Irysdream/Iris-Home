@@ -1039,17 +1039,21 @@
       }
     });
   </script>
-<!-- ==================== Live2D 看板娘（仅 Cubism 3/4） ==================== -->
+<!-- ==================== Live2D 看板娘（Cubism 3/4 稳定版） ==================== -->
 <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
+<!-- 可靠的 Cubism Core -->
+<script src="https://cdn.jsdelivr.net/npm/live2dcubismcore@1.0.2/live2dcubismcore.min.js"></script>
+<!-- 只加载 Cubism4 版本 -->
 <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
-<script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
 
 <script>
 (async function () {
-  if (window.innerWidth < 768) return; // 手机端不加载
+  // 手机端不加载
+  if (window.innerWidth < 768) return;
 
-  if (!window.PIXI || !PIXI.live2d) {
-    console.error('Live2D 库加载失败');
+  // 检查库是否加载成功
+  if (!window.PIXI || !window.PIXI.live2d) {
+    console.error('Live2D 库加载失败，请检查网络');
     return;
   }
 
@@ -1069,6 +1073,7 @@
   });
   document.body.appendChild(container);
 
+  // 创建 PIXI 应用
   const app = new PIXI.Application({
     view: document.createElement('canvas'),
     autoStart: true,
@@ -1080,11 +1085,13 @@
   app.view.style.pointerEvents = 'auto';
 
   try {
+    // 加载模型
     const model = await Live2DModel.from(
       'https://irysdream.github.io/Iris-Home/miku/miku.model3.json',
       { autoInteract: true }
     );
 
+    // 调整大小和位置
     model.scale.set(0.24);
     model.x = app.screen.width / 2;
     model.y = app.screen.height + 30;
