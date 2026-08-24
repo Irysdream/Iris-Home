@@ -1039,7 +1039,7 @@
       }
     });
   </script>
-<!-- ==================== Live2D 看板娘（上半身贴底） ==================== -->
+<!-- ==================== Live2D 看板娘（上半身 + 表情系统） ==================== -->
 <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/live2dcubismcore@1.0.2/live2dcubismcore.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
@@ -1048,16 +1048,26 @@
 (async function () {
   if (window.innerWidth < 768) return;
 
-  // ========== 最终参数 ==========
+  // ========== 参数 ==========
   const config = {
-    left: 10,          // 距离左边
-    bottom: 0,         // 贴齐底部
-    width: 250,        // 显示区域宽度
-    height: 290,       // 显示区域高度
-    scale: 0.165,      // 模型大小
-    offsetY: 200       // 垂直位置
+    left: 10,
+    bottom: 0,
+    width: 250,
+    height: 290,
+    scale: 0.165,
+    offsetY: 200
   };
-  // ============================
+  // ========================
+
+  // 表情列表（对应你 model3.json 里的）
+  const expressions = [
+    'Chijing',
+    'Dazhihui',
+    'Mimiyan',
+    'Saihong',
+    'Yanjing',
+    'liuhan'
+  ];
 
   if (!window.PIXI || !window.PIXI.live2d) {
     console.error('Live2D 库加载失败');
@@ -1103,7 +1113,28 @@
 
     app.stage.addChild(model);
 
-    console.log('MIKU Live2D 加载成功 ✓');
+    // ========== 随机触发表情函数 ==========
+    function randomExpression() {
+      const name = expressions[Math.floor(Math.random() * expressions.length)];
+      try {
+        model.expression(name);
+        console.log('触发表情：', name);
+      } catch (e) {
+        console.warn('表情触发失败：', name, e);
+      }
+    }
+
+    // 1. 点击模型随机触发表情
+    app.view.addEventListener('click', () => {
+      randomExpression();
+    });
+
+    // 2. 每 30 秒自动随机触发表情
+    setInterval(() => {
+      randomExpression();
+    }, 30000);
+
+    console.log('MIKU Live2D 加载成功 ✓（点击或每30秒随机表情）');
   } catch (err) {
     console.error('模型加载失败：', err);
   }
