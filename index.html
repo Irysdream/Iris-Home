@@ -1039,7 +1039,7 @@
       }
     });
   </script>
-<!-- ==================== Live2D 看板娘（模型范围内追踪） ==================== -->
+<!-- ==================== Live2D 双模型切换（Miku ↔ 朱元璋） ==================== -->
 <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/live2dcubismcore@1.0.2/live2dcubismcore.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
@@ -1048,25 +1048,42 @@
 (async function () {
   if (window.innerWidth < 768) return;
 
-  // ========== 参数 ==========
+  // ========== 通用参数 ==========
   const config = {
     left: 10,
     bottom: 0,
-    width: 250,
-    height: 290,
-    scale: 0.165,
-    offsetY: 200
+    width: 280,
+    height: 360,
+    scale: 0.22,       // 通用缩放，切换后可再微调
+    offsetY: 210
   };
-  // ========================
 
-  const expressions = [
-    'Chijing',
-    'Dazhihui',
-    'Mimiyan',
-    'Saihong',
-    'Yanjing',
-    'liuhan'
-  ];
+  // 两个模型的配置
+  const modelsConfig = {
+    miku: {
+      url: 'https://irysdream.github.io/Iris-Home/miku/miku.model3.json',
+      expressions: ['Chijing', 'Dazhihui', 'Mimiyan', 'Saihong', 'Yanjing', 'liuhan'],
+      scale: 0.165,
+      offsetY: 200,
+      width: 250,
+      height: 290
+    },
+    zhu: {
+      url: 'https://irysdream.github.io/Iris-Home/朱元璋/朱元璋.model3.json',
+      expressions: ['angry', 'tonge', 'wonder'],
+      scale: 0.28,
+      offsetY: 220,
+      width: 280,
+      height: 360
+    }
+  };
+
+  let current = 'miku';          // 当前模型
+  let model = null;
+  let canClick = true;
+  let autoTimer = null;
+  let app = null;
+  let container = null;
 
   if (!window.PIXI || !window.PIXI.live2d) {
     console.error('Live2D 库加载失败');
@@ -1075,21 +1092,43 @@
 
   const { Live2DModel } = PIXI.live2d;
 
-  const container = document.createElement('div');
-  container.id = 'live2d-miku';
+  // 创建容器
+  container = document.createElement('div');
+  container.id = 'live2d-container';
   Object.assign(container.style, {
     position: 'fixed',
     left: config.left + 'px',
     bottom: config.bottom + 'px',
-    width: config.width + 'px',
-    height: config.height + 'px',
+    width: modelsConfig.miku.width + 'px',
+    height: modelsConfig.miku.height + 'px',
     zIndex: '9998',
     pointerEvents: 'none',
     overflow: 'hidden'
   });
   document.body.appendChild(container);
 
-  const app = new PIXI.Application({
+  // 创建切换按钮
+  const btn = document.createElement('button');
+  btn.id = 'live2d-switch-btn';
+  btn.innerText = '切换模型';
+  Object.assign(btn.style, {
+    position: 'fixed',
+    left: '10px',
+    bottom: '300px',
+    zIndex: '9999',
+    padding: '6px 12px',
+    background: 'rgba(0,0,0,0.6)',
+    color: '#fff',
+    border: '1px solid #fff',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    userSelect: 'none'
+  });
+  document.body.appendChild(btn);
+
+  // 创建 PIXI 应用
+  app = new PIXI.Application({
     view: document.createElement('canvas'),
     autoStart: true,
     resizeTo: container,
@@ -1099,64 +1138,93 @@
   container.appendChild(app.view);
   app.view.style.pointerEvents = 'auto';
 
-  try {
-    const model = await Live2DModel.from(
-      'https://irysdream.github.io/Iris-Home/miku/miku.model3.json',
-      { autoInteract: false }
-    );
-
-    model.scale.set(config.scale);
-    model.x = app.screen.width / 2;
-    model.y = config.offsetY;
-    model.anchor.set(0.5, 0.5);
-
-    app.stage.addChild(model);
-
-    // ========== 表情系统 ==========
-    let canClick = true;
-    let autoTimer = null;
-
-    function randomExpression() {
-      const name = expressions[Math.floor(Math.random() * expressions.length)];
-      try {
-        model.expression(name);
-        console.log('触发表情：', name);
-      } catch (e) {}
+  // ========== 加载模型函数 ==========
+  async function loadModel(key) {
+    // 清除旧模型
+    if (model) {
+      app.stage.removeChild(model);
+      model.destroy();
+      model = null;
     }
+    if (autoTimer) clearInterval(autoTimer);
 
-    function startAutoExpression() {
-      if (autoTimer) clearInterval(autoTimer);
-      autoTimer = setInterval(randomExpression, 30000);
-    }
-    startAutoExpression();
+    const cfg = modelsConfig[key];
+    current = key;
 
-    // 点击表情（3秒CD + 重置计时）
-    app.view.addEventListener('click', () => {
-      if (!canClick) return;
-      canClick = false;
-      randomExpression();
+    // 更新容器大小
+    container.style.width = cfg.width + 'px';
+    container.style.height = cfg.height + 'px';
+
+    try {
+      model = await Live2DModel.from(cfg.url, { autoInteract: false });
+      model.scale.set(cfg.scale);
+      model.x = app.screen.width / 2;
+      model.y = cfg.offsetY;
+      model.anchor.set(0.5, 0.5);
+      app.stage.addChild(model);
+
+      // 重新绑定表情系统
       startAutoExpression();
-      setTimeout(() => canClick = true, 3000);
-    });
 
-    // ========== 只在模型范围内追踪 ==========
-    app.view.addEventListener('pointermove', (e) => {
-      const rect = app.view.getBoundingClientRect();
-      // 转换成 -1 ~ 1
-      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
-      model.focus(x, y);
-    });
-
-    // 鼠标离开模型范围时看回正面
-    app.view.addEventListener('pointerleave', () => {
-      model.focus(0, 0);
-    });
-
-    console.log('MIKU Live2D 加载成功 ✓');
-  } catch (err) {
-    console.error('模型加载失败：', err);
+      console.log(`已切换到：${key === 'miku' ? 'Miku' : '朱元璋'}`);
+    } catch (err) {
+      console.error('模型加载失败：', err);
+    }
   }
+
+  // ========== 表情系统 ==========
+  function randomExpression() {
+    if (!model) return;
+    const list = modelsConfig[current].expressions;
+    const name = list[Math.floor(Math.random() * list.length)];
+    try {
+      model.expression(name);
+      console.log('触发表情：', name);
+    } catch (e) {}
+  }
+
+  function startAutoExpression() {
+    if (autoTimer) clearInterval(autoTimer);
+    autoTimer = setInterval(randomExpression, 30000);
+  }
+
+  // 点击触发表情（3秒CD）
+  app.view.addEventListener('click', () => {
+    if (!canClick || !model) return;
+    canClick = false;
+    randomExpression();
+    startAutoExpression();
+    setTimeout(() => canClick = true, 3000);
+  });
+
+  // ========== 视线追踪（仅在模型范围内） ==========
+  app.view.addEventListener('pointermove', (e) => {
+    if (!model) return;
+    const rect = app.view.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+    model.focus(x, y);
+  });
+
+  app.view.addEventListener('pointerleave', () => {
+    if (model) model.focus(0, 0);
+  });
+
+  // ========== 切换按钮 ==========
+  btn.addEventListener('click', async () => {
+    const next = current === 'miku' ? 'zhu' : 'miku';
+    btn.innerText = '切换中...';
+    btn.disabled = true;
+    await loadModel(next);
+    btn.innerText = next === 'miku' ? '切换到朱元璋' : '切换到 Miku';
+    btn.disabled = false;
+  });
+
+  // 初始加载 Miku
+  await loadModel('miku');
+  btn.innerText = '切换到朱元璋';
+
+  console.log('双模型 Live2D 系统加载完成 ✓');
 })();
 </script>
 </body>
